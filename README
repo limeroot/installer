@@ -1,5 +1,3 @@
 This GNU/Linux distribution had as intent be a flexible base where the sysadmin is who decide the type of server want build.
 The GNU/Linux LimeRoot is expandable via "modules" to add new cool features to it. By default GNU/Linux LimeRoot have a friendly web administration page.
 The GitHub repository called "installer" contains the installer script of GNU/Linux LimeRoot.
-
-Test edition
