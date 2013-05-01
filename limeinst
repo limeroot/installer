@@ -64,8 +64,8 @@ bbLinks(){
 quickInst(){
 	#Get First avaliable device and size:
 	hdd="$(getDrives | head -1)"
-	hdd_size="${hdd%%:*}"
-	hdd="/dev/${hdd##*:}"
+        hdd_size="${hdd##*:}"
+	hdd="/dev/${hdd%%:*}"
 	#Check amount of RAM to decide if swap will be enabled
 	[ $(getRAM) -le 1000 ] && swap="1000" || swap="0"
 	
