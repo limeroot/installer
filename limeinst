@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 
-free="/bin/busybox free"
+#free="/bin/busybox free"
 
 getDrives(){
 	grep -E 'sd[a-z]$|hd[a-z]$' "/proc/partitions" | awk '{print $4":"$3/1024}'
@@ -36,11 +36,11 @@ listDrives(){
 	# 2) Device sdb (2048 MB)
 }
 
-getRAM(){
-	$free | grep -E 'Mem:' | awk '{print int($2/1024)}'
-	#Output: Usable RAMsizeMB
-	# 588
-}
+#getRAM(){
+#	$free | grep -E 'Mem:' | awk '{print int($2/1024)}'
+#	#Output: Usable RAMsizeMB
+#	# 588
+#}
 
 bbLinks(){
 	#Relative links are usted to prevent some errors if sysadmin need move/copy this links via scp, ssh, sftp:
@@ -65,10 +65,11 @@ quickInst(){
 	#Get First avaliable device and size:
 	hdd="$(getDrives | head -1)"
         hdd_size="${hdd##*:}"
-	hdd="/dev/${hdd%%:*}"
+        hdd="/dev/${hdd%%:*}"
 	#Check amount of RAM to decide if swap will be enabled
-	[ $(getRAM) -le 1000 ] && swap="1000" || swap="0"
-	
+	#Disabled to get things easier for us the devel team :P
+        #[ $(getRAM) -le 1000 ] && swap="1000" || swap="0"
+        [ $hdd_size -le 2000 ] && swap=0 || swap=1024
 }
 
 case $1 in
