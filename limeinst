@@ -1,0 +1,77 @@
+#!/bin/sh
+
+#  Copyright 2013 LimeRoot <devel@limeroot.org>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+
+free="/bin/busybox free"
+
+getDrives(){
+	grep -E 'sd[a-z]$|hd[a-z]$' "/proc/partition" | awk '{print $4":"$3/1024}'
+	#Output: Avaliable device:deviceSizeMB
+	# sda:8192
+	# sdb:2048
+}
+
+listDrives(){
+	n=1; for i in $(getDrives); do
+		echo "$n) Device ${i%%:*} (${i##*:} MB)"
+		let n++
+	done
+	#Output: #) Device (deviceSizeMB)
+	# 1) Device sda (8192 MB)
+	# 2) Device sdb (2048 MB)
+}
+
+getRAM(){
+	$free | grep -E 'Mem:' | awk '{print int($2/1024)}'
+	#Output: Usable RAMsizeMB
+	# 588
+}
+
+bbLinks(){
+	#Relative links are usted to prevent some errors if sysadmin need move/copy this links via scp, ssh, sftp:
+	ln -s busybox /mnt/bin/ping
+	ln -s busybox /mnt/bin/nc
+	ln -s busybox /mnt/bin/netstat
+	ln -s ../bin/busybox /mnt/sbin/ifconfig
+	ln -s ../bin/busybox /mnt/sbin/route
+	ln -s ../../bin/busybox /mnt/usr/sbin/brctl
+	ln -s ../../bin/busybox /mnt/usr/bin/arping
+	ln -s ../../bin/busybox /mnt/usr/bin/wget
+	ln -s ../../bin/busybox /mnt/usr/bin/traceroute
+	ln -s ../../bin/busybox /mnt/usr/bin/ipcalc
+	ln -s ../../bin/busybox /mnt/usr/bin/nslookup
+}
+
+# Main Script
+# Check if user is root user:
+[ "$(whoami)" != "root" ] && echo "Must be run as root"; exit 1;
+
+quickInst(){
+	#Get First avaliable device and size:
+	hdd="$(getDrives | head -1)"
+	hdd_size="${hdd%%:*}"
+	hdd="/dev/${hdd##*:}"
+	#Check amount of RAM to decide if swap will be enabled
+	[ $(getRAM) -le 1000 ] && swap="1000" || swap="0"
+	
+}
+
+case $1 in
+	auto) quickInst;;
+	*) echo "Usage: $0 { auto | guided | manual }";;
+esac
