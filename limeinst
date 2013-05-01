@@ -20,7 +20,7 @@
 free="/bin/busybox free"
 
 getDrives(){
-	grep -E 'sd[a-z]$|hd[a-z]$' "/proc/partition" | awk '{print $4":"$3/1024}'
+	grep -E 'sd[a-z]$|hd[a-z]$' "/proc/partitions" | awk '{print $4":"$3/1024}'
 	#Output: Avaliable device:deviceSizeMB
 	# sda:8192
 	# sdb:2048
