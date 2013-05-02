@@ -58,7 +58,7 @@ mkPartitions(){
 		echo -e ",,L,*\n" | sfdisk -uM $1
 	else
 		echo -e ",$2,L,*\n,,S" | sfdisk -uM $1
-	}
+        fi
 }
 
 mkFilesystem(){
