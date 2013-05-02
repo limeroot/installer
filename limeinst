@@ -41,8 +41,8 @@ getDrive(){
                     found="yes"
     
                     for hdd_ in ${hdd_real_list}; do
-                        hdd_size="${hdd##*:}"
-                        hdd_="${hdd%%:*}"
+                        hdd_size="${hdd_##*:}"
+                        hdd_="${hdd_%%:*}"
                         if [ "${hdd_}" == "${shdd}" ]; then
                             break
                         fi
