@@ -103,7 +103,7 @@ mkFstab(){
 proc            /proc           proc    defaults        0       0
 ${1}1           /               ext4    defaults,noatime,errors=remount-ro  0   1
 ${1}2           none            swap    sw              0       0
-    " > /mnt/etc/fstab
+" > /mnt/etc/fstab
 }
 
 fakeBoot(){
@@ -120,8 +120,24 @@ label l0r
     text help
    This option boots the system into recovery mode (single-user)
     endtext
+" > /mnt/boot/extlinux/linux.cfg
+}
 
-    " > /mnt/boot/extlinux/linux.cfg
+uninstallUnneeded(){
+    
+    echo "Uninistalling unneeded files"
+    
+    chroot /mnt /bin/bash -c "
+    #Preserve this
+    apt-get install busybox -q=2 >/dev/null 2>&1
+    apt-get install udev -q=2 >/dev/null 2>&1
+    apt-get install module-init-tools -q=2 >/dev/null 2>&1
+    
+    #Uninistalling live files -q=2 >/dev/null 2>&1
+    apt-get remove live-boot -q=2 >/dev/null 2>&1
+    apt-get autoremove -q=2 >/dev/null 2>&1
+    dpkg --get-selections | grep deinstall | sed 's/deinstall/\lpurge/' | dpkg --set-selections; dpkg -Pa >/dev/null 2>&1
+    "
 }
 
 limeDump(){
@@ -141,9 +157,13 @@ limeDump(){
     sed -i 's/EXTLINUX_TIMEOUT="50"/EXTLINUX_TIMEOUT="01"/g' /mnt/etc/default/extlinux
     sed -i 's/timeout 50/timeout 01/g' /mnt/boot/extlinux/extlinux.conf
     fakeBoot "$hdd"
-    extlinux --install /mnt/boot/extlinux
-    umount ${hdd}1
-    echo "Ready, now you can type reboot to reboot system, dont forget eject the CD"
+    extlinux --install /mnt/boot/extlinux >/dev/null 2>&1
+    
+    uninstallUnneeded
+    
+    umount /mnt
+
+    echo "Done, now you can type reboot to reboot system, dont forget eject the CD"
 }
 
 # Main Script
