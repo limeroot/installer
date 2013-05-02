@@ -57,16 +57,6 @@ getDrive(){
     hdd="/dev/${hdd}"
 }
 
-listDrives(){
-	n=1; for i in $(getDrives); do
-		echo "$n) Device ${i%%:*} (${i##*:} MB)"
-		let n++
-	done
-	#Output: #) Device (deviceSizeMB)
-	# 1) Device sda (8192 MB)
-	# 2) Device sdb (2048 MB)
-}
-
 bbLinks(){
 	#Relative links are usted to prevent some errors if sysadmin need move/copy this links via scp, ssh, sftp:
 	ln -s busybox /mnt/bin/ping
@@ -97,6 +87,22 @@ mkFilesystem(){
 	#$2 is hdd
 	[ "$1" = "root" ] && mke2fs -t ext4 -m 0 -jqF ${2}1 >/dev/null 2>&1
 	[ "$1" = "swap" ] && mkswap ${2}2
+}
+
+kernelName(){
+    kname="$(ls /boot/config*)"
+    echo "${kname#*-}"
+}
+
+limeDump(){
+    #$1 is hdd
+    mount $hdd /mnt
+    cp -aR /bin /boot /etc /home /lib /opt /root /sbin /selinux /src /tmp /usr /var /mnt
+    cp -av /dev /mnt
+    chown root /mnt/dev/*
+    mkdir -p /mnt/{proc,mnt,sys,media}
+    cp /live/image/live/vmlinuz vmlinuz-$(kernelName)
+    cp /live/image/live/initrd.img initrd.img-$(kernelName)
 }
 
 # Main Script
