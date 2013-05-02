@@ -59,7 +59,18 @@ bbLinks(){
 
 # Main Script
 # Check if user is root user:
-[ "$(whoami)" != "root" ] && echo "Must be run as root"; exit 1;
+#[ "$(whoami)" != "root" ] && echo "Must be run as root"; exit 1;
+# Deprecated, LimeRoot CD use only root account.
+
+mkPartitions(){
+	#$1 is hdd
+	#$2 is size
+	if [ -z "$2" ]; then
+		echo -e ",,L,*\n" | sfdisk -uM $1
+	else
+		echo -e ",$2,L,*\n,,S" | sfdisk -uM $1
+	}
+}
 
 quickInst(){
 	#Get First avaliable device and size:
@@ -70,6 +81,8 @@ quickInst(){
 	#Disabled to get things easier for us the devel team :P
         #[ $(getRAM) -le 1000 ] && swap="1000" || swap="0"
         [ $hdd_size -le 2000 ] && swap=0 || swap=1024
+    #Calculate size of / and swap:
+    	[ $swap -ne 0 ] && hdd_size=$(( $hdd_size - $swap ))
 }
 
 case $1 in
