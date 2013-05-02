@@ -36,12 +36,6 @@ listDrives(){
 	# 2) Device sdb (2048 MB)
 }
 
-#getRAM(){
-#	$free | grep -E 'Mem:' | awk '{print int($2/1024)}'
-#	#Output: Usable RAMsizeMB
-#	# 588
-#}
-
 bbLinks(){
 	#Relative links are usted to prevent some errors if sysadmin need move/copy this links via scp, ssh, sftp:
 	ln -s busybox /mnt/bin/ping
@@ -57,11 +51,6 @@ bbLinks(){
 	ln -s ../../bin/busybox /mnt/usr/bin/nslookup
 }
 
-# Main Script
-# Check if user is root user:
-#[ "$(whoami)" != "root" ] && echo "Must be run as root"; exit 1;
-# Deprecated, LimeRoot CD use only root account.
-
 mkPartitions(){
 	#$1 is hdd
 	#$2 is size
@@ -72,17 +61,33 @@ mkPartitions(){
 	}
 }
 
+mkFilesystem(){
+	#$1 is [ root | swap ]
+	#$2 is hdd
+	[ "$1" = "root" ] && mke2fs -t ext4 -m 0 -jqF ${1}1 >/dev/null 2>&1
+	[ "$1" = "swap" ] && mkswap ${1}2
+}
+
+# Main Script
 quickInst(){
 	#Get First avaliable device and size:
 	hdd="$(getDrives | head -1)"
         hdd_size="${hdd##*:}"
         hdd="/dev/${hdd%%:*}"
-	#Check amount of RAM to decide if swap will be enabled
-	#Disabled to get things easier for us the devel team :P
-        #[ $(getRAM) -le 1000 ] && swap="1000" || swap="0"
+
+    #Calculate if hdd size is enough for swap:
         [ $hdd_size -le 2000 ] && swap=0 || swap=1024
-    #Calculate size of / and swap:
-    	[ $swap -ne 0 ] && hdd_size=$(( $hdd_size - $swap ))
+    #Calculate size for root and swap partitions
+    # create partitions
+    # make filesystem (ext4) and make swap if swap != 0.
+    	if [ $swap -ne 0 ]; then
+    		mkPartitions "$hdd" "$(( $hdd_size - $swap ))"
+    		mkFilesystem "root" "$hdd"
+    		mkFilesystem "swap" "$hdd"
+    	else
+    		mkPartitions "$hdd"
+    		mkFilesystem "root" "$hdd"
+    	}
 }
 
 case $1 in
