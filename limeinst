@@ -19,7 +19,7 @@
 
 #free="/bin/busybox free"
 
-getDrives(){
+getDrive(){
     drives=$(grep -E 'sd[a-z]$|hd[a-z]$' "/proc/partitions" | awk '{print $4":"$3/1024}')
     
     for hdd in $drives; do
@@ -99,24 +99,23 @@ mkFilesystem(){
 
 # Main Script
 quickInst(){
-	#Get First avaliable device and size:
-	hdd="$(getDrives | head -1)"
-        hdd_size="${hdd##*:}"
-        hdd="/dev/${hdd%%:*}"
 
+    getDrive
+    
     #Calculate if hdd size is enough for swap:
-        [ $hdd_size -le 2000 ] && swap=0 || swap=1024
+    [ $hdd_size -le 2000 ] && swap=0 || swap=1024
+
     #Calculate size for root and swap partitions
     # create partitions
     # make filesystem (ext4) and make swap if swap != 0.
-    	if [ $swap -ne 0 ]; then
-    		mkPartitions "$hdd" "$(( $hdd_size - $swap ))"
-    		mkFilesystem "root" "$hdd"
-    		mkFilesystem "swap" "$hdd"
-    	else
-    		mkPartitions "$hdd"
-    		mkFilesystem "root" "$hdd"
-    	}
+    if [ $swap -ne 0 ]; then
+            mkPartitions "$hdd" "$(( $hdd_size - $swap ))"
+            mkFilesystem "root" "$hdd"
+            mkFilesystem "swap" "$hdd"
+    else
+            mkPartitions "$hdd"
+            mkFilesystem "root" "$hdd"
+    fi
 }
 
 case $1 in
