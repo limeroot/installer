@@ -20,10 +20,39 @@
 #free="/bin/busybox free"
 
 getDrives(){
-	grep -E 'sd[a-z]$|hd[a-z]$' "/proc/partitions" | awk '{print $4":"$3/1024}'
-	#Output: Avaliable device:deviceSizeMB
-	# sda:8192
-	# sdb:2048
+    drives=$(grep -E 'sd[a-z]$|hd[a-z]$' "/proc/partitions" | awk '{print $4":"$3/1024}')
+    
+    for hdd in $drives; do
+        ((count++))
+        hdd_real_list="${hdd_real_list}${hdd} "
+        hdd_size="${hdd##*:}"
+        hdd="${hdd%%:*}"
+        hdd_list="${hdd_list}[${hdd}]: ${hdd_size}MB " 
+        hdd_name_list="${hdd_name_list}${hdd} "
+    done
+    
+    if [[ $count > 1 ]]; then
+        while [ "${found}" != "yes" ]; do
+            echo -e "Please select one disk to install LimeRoot:\n${hdd_list}"
+            read shdd
+                
+            for hdd in ${hdd_name_list}; do
+                if [ "${hdd}" == "${shdd}" ]; then                
+                    found="yes"
+    
+                    for hdd_ in ${hdd_real_list}; do
+                        hdd_size="${hdd_##*:}"
+                        hdd_="${hdd%%:*}"
+                        if [ "${hdd_}" == "${shdd}" ]; then
+                            break
+                        fi
+                    done
+                    
+                    break
+                fi
+            done
+        done
+    fi    
 }
 
 listDrives(){
