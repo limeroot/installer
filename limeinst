@@ -41,7 +41,7 @@ getDrive(){
                     found="yes"
     
                     for hdd_ in ${hdd_real_list}; do
-                        hdd_size="${hdd_##*:}"
+                        hdd_size="${hdd##*:}"
                         hdd_="${hdd%%:*}"
                         if [ "${hdd_}" == "${shdd}" ]; then
                             break
@@ -104,7 +104,7 @@ quickInst(){
     
     getDrive
     
-    dd if=/dev/zero of=$hdd bs=512 count=1
+    dd if=/dev/zero of=$hdd bs=512 count=1 >/dev/null 2>&1
     
     #Calculate if hdd size is enough for swap:
     [ $hdd_size -le 2000 ] && swap=0 || swap=1024
