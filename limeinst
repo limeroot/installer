@@ -155,7 +155,7 @@ quickInst(){
     cat /usr/lib/extlinux/mbr.bin >$hdd
     
     #Calculate if hdd size is enough for swap:
-    [ "$hdd_size" -le 2000 ] && swap=0 || swap=1024
+    [ $hdd_size -le 2000 ] && swap=0 || swap=1024
 
     #Calculate size for root and swap partitions
     # create partitions
