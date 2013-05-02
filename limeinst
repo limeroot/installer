@@ -52,7 +52,9 @@ getDrive(){
                 fi
             done
         done
-    fi    
+    fi
+    
+    hdd="/dev/${hdd}"
 }
 
 listDrives(){
@@ -93,14 +95,16 @@ mkPartitions(){
 mkFilesystem(){
 	#$1 is [ root | swap ]
 	#$2 is hdd
-	[ "$1" = "root" ] && mke2fs -t ext4 -m 0 -jqF ${1}1 >/dev/null 2>&1
-	[ "$1" = "swap" ] && mkswap ${1}2
+	[ "$1" = "root" ] && mke2fs -t ext4 -m 0 -jqF ${2}1 >/dev/null 2>&1
+	[ "$1" = "swap" ] && mkswap ${2}2
 }
 
 # Main Script
 quickInst(){
-
+    
     getDrive
+    
+    dd if=/dev/zero of=$hdd bs=512 count=1
     
     #Calculate if hdd size is enough for swap:
     [ $hdd_size -le 2000 ] && swap=0 || swap=1024
