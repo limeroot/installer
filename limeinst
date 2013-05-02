@@ -18,6 +18,17 @@
 #  MA 02110-1301, USA.
 
 #free="/bin/busybox free"
+SQLITE="/usr/bin/sqlite3"
+CONFIG_DIR="/var/db/limeroot/"
+CONFIG_FILE="/var/db/limeroot/limeconfig.db"
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+createConfigDB(){
+
+    mkdir  -p $CONFIG_DIR
+    $SQLITE $CONFIG_FILE "CREATE TABLE ip (name TEXT, address TEXT);" >/dev/null 2>&1
+}
 
 getDrive(){
     drives=$(grep -E 'sd[a-z]$|hd[a-z]$' "/proc/partitions" | awk '{print $4":"$3/1024}')
@@ -55,6 +66,22 @@ getDrive(){
     fi
     
     hdd="/dev/${hdd}"
+}
+
+getIP(){
+    while [ "${found}" != "yes" ]; do
+
+        echo -e "Please type the LAN IP Address you want to set to LimeRoot:"
+        read ip_address
+        prefix=$(busybox ipcalc -p ${ip_address} -s)
+        prefix=${prefix##*=}
+        if [ "${prefix}" == "24" ]; then
+            found="yes"
+        else
+            found="no"
+            echo "Error: ${bold}\"${ip_address}\"${normal} is not a valid IP Address"
+        fi
+    done
 }
 
 bbLinks(){
@@ -170,8 +197,18 @@ limeDump(){
 quickInst(){
     
     getDrive
+    
+    getIP
+    
+    createConfigDB
+    
+    $SQLITE $CONFIG_FILE "INSERT INTO ip(name,address) VALUES('lan','${ip_address}');"
+    
+    #$SQLITE $CONFIG_FILE "select * from ip"    
+    
     echo "Installing MBR..."
-    #dd if=/dev/zero of=$hdd bs=512 count=1 >/dev/null 2>&1
+    
+    #dd if=/dev/zero of=/dev/sda bs=446 count=1 >/dev/null 2>&1
     cat /usr/lib/extlinux/mbr.bin >$hdd
     
     #Calculate if hdd size is enough for swap:
@@ -190,6 +227,10 @@ quickInst(){
     fi
     limeDump "$hdd"
 }
+
+clear
+
+echo -e "${bold}Installing LimeRoot${normal}\n"
 
 case $1 in
 	auto) quickInst;;
