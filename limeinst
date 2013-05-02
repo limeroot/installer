@@ -75,18 +75,20 @@ bbLinks(){
 mkPartitions(){
 	#$1 is hdd
 	#$2 is size
+    echo "Creating Partitions ..."
 	if [ -z "$2" ]; then
-		echo -e ",,L,*\n" | sfdisk -uM $1
+		echo -e ",,L,*\n" | sfdisk -uM $1 >/dev/null 2>&1
 	else
-		echo -e ",$2,L,*\n,,S" | sfdisk -uM $1
-        fi
+		echo -e ",$2,L,*\n,,S" | sfdisk -uM $1 >/dev/null 2>&1
+    fi
 }
 
 mkFilesystem(){
 	#$1 is [ root | swap ]
 	#$2 is hdd
+    echo "Creating Filesystem ..."
 	[ "$1" = "root" ] && mke2fs -t ext4 -m 0 -jqF ${2}1 >/dev/null 2>&1
-	[ "$1" = "swap" ] && mkswap ${2}2
+	[ "$1" = "swap" ] && mkswap ${2}2 >/dev/null 2>&1
 }
 
 kernelName(){
@@ -94,26 +96,66 @@ kernelName(){
     echo "${kname#*-}"
 }
 
+mkFstab(){
+    #$1 is hdd
+    echo -e "# /etc/fstab: static file system information.
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+proc            /proc           proc    defaults        0       0
+${1}1           /               ext4    defaults,noatime,errors=remount-ro  0   1
+${1}2           none            swap    sw              0       0
+    " > /mnt/etc/fstab
+}
+
+fakeBoot(){
+    #$1 is hdd
+    echo "label l0
+    menu label Debian GNU/Linux, kernel $(kernelName)
+    linux /boot/vmlinuz-$(kernelName)
+    append initrd=/boot/initrd.img-$(kernelName) root=${1}1 ro quiet
+
+label l0r
+    menu label Debian GNU/Linux, kernel $(kernelName) (recovery mode)
+    linux /boot/vmlinuz-$(kernelName)
+    append initrd=/boot/initrd.img-$(kernelName) root=${1}1 ro single
+    text help
+   This option boots the system into recovery mode (single-user)
+    endtext
+
+    " > /mnt/boot/extlinux/linux.cfg
+}
+
 limeDump(){
     #$1 is hdd
-    mount $hdd /mnt
-    cp -aR /bin /boot /etc /home /lib /opt /root /sbin /selinux /src /tmp /usr /var /mnt
-    cp -av /dev /mnt
+    echo "Installing Limeroot Base System ..."
+    mount ${hdd}1 /mnt
+    cp -aR /bin /boot /etc /home /lib /opt /root /sbin /selinux /srv /tmp /usr /var /mnt
+    cp -av /dev /mnt >/dev/null 2>&1
     chown root /mnt/dev/*
     mkdir -p /mnt/{proc,mnt,sys,media}
-    cp /live/image/live/vmlinuz vmlinuz-$(kernelName)
-    cp /live/image/live/initrd.img initrd.img-$(kernelName)
+    cp /live/image/live/vmlinuz /mnt/boot/vmlinuz-$(kernelName)
+    cp /live/image/live/initrd.img /mnt/boot/initrd.img-$(kernelName)
+    echo "Installing Soft Links ..."
+    bbLinks
+    mkFstab "$hdd"
+    echo "Installing Boot Manager ..."
+    sed -i 's/EXTLINUX_TIMEOUT="50"/EXTLINUX_TIMEOUT="01"/g' /mnt/etc/default/extlinux
+    sed -i 's/timeout 50/timeout 01/g' /mnt/boot/extlinux/extlinux.conf
+    fakeBoot "$hdd"
+    extlinux --install /mnt/boot/extlinux
+    umount ${hdd}1
+    echo "Ready, now you can type reboot to reboot system, dont forget eject the CD"
 }
 
 # Main Script
 quickInst(){
     
     getDrive
-    
-    dd if=/dev/zero of=$hdd bs=512 count=1 >/dev/null 2>&1
+    echo "Installing MBR..."
+    #dd if=/dev/zero of=$hdd bs=512 count=1 >/dev/null 2>&1
+    cat /usr/lib/extlinux/mbr.bin >$hdd
     
     #Calculate if hdd size is enough for swap:
-    [ $hdd_size -le 2000 ] && swap=0 || swap=1024
+    [ "$hdd_size" -le 2000 ] && swap=0 || swap=1024
 
     #Calculate size for root and swap partitions
     # create partitions
@@ -126,6 +168,7 @@ quickInst(){
             mkPartitions "$hdd"
             mkFilesystem "root" "$hdd"
     fi
+    limeDump "$hdd"
 }
 
 case $1 in
