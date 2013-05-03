@@ -169,6 +169,7 @@ uninstallUnneeded(){
 
 limeDump(){
     #$1 is hdd
+    #$2 is swap
     echo "Installing Limeroot Base System ..."
     mount ${hdd}1 /mnt
     cp -aR /bin /boot /etc /home /lib /opt /root /sbin /selinux /srv /tmp /usr /var /mnt
@@ -179,7 +180,7 @@ limeDump(){
     cp /live/image/live/initrd.img /mnt/boot/initrd.img-$(kernelName)
     echo "Installing Soft Links ..."
     bbLinks
-    mkFstab "$hdd"
+    mkFstab "$hdd" "$2"
     echo "Installing Boot Manager ..."
     sed -i 's/EXTLINUX_TIMEOUT="50"/EXTLINUX_TIMEOUT="01"/g' /mnt/etc/default/extlinux
     sed -i 's/timeout 50/timeout 01/g' /mnt/boot/extlinux/extlinux.conf
