@@ -125,12 +125,12 @@ kernelName(){
 
 mkFstab(){
     #$1 is hdd
-    echo -e "# /etc/fstab: static file system information.
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-proc            /proc           proc    defaults        0       0
-${1}1           /               ext4    defaults,noatime,errors=remount-ro  0   1
-${1}2           none            swap    sw              0       0
-" > /mnt/etc/fstab
+    #$2 is swap
+    echo -e "# /etc/fstab: static file system information." > /mnt/etc/fstab
+    echo -e "# <file system> <mount point>   <type>  <options>       <dump>  <pass>" > /mnt/etc/fstab
+    echo -e "proc            /proc           proc    defaults        0       0" > /mnt/etc/fstab
+    echo -e "${1}1           /               ext4    defaults,noatime,errors=remount-ro  0   1" > /mnt/etc/fstab
+    [ $2 -ne 0 ] && echo -e "${1}2           none            swap    sw              0       0" > /mnt/etc/fstab
 }
 
 fakeBoot(){
@@ -226,7 +226,7 @@ quickInst(){
             mkPartitions "$hdd"
             mkFilesystem "root" "$hdd"
     fi
-    limeDump "$hdd"
+    limeDump "$hdd" "$swap"
 }
 
 clear
