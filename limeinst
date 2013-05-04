@@ -17,7 +17,6 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 
-#free="/bin/busybox free"
 SQLITE="/usr/bin/sqlite3"
 CONFIG_DIR="/var/db/limeroot/"
 CONFIG_FILE="/var/db/limeroot/limeconfig.db"
