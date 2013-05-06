@@ -96,6 +96,7 @@ bbLinks(){
 	ln -s ../../bin/busybox /mnt/usr/bin/traceroute
 	ln -s ../../bin/busybox /mnt/usr/bin/ipcalc
 	ln -s ../../bin/busybox /mnt/usr/bin/nslookup
+    ln -s ../../bin/busybox /mnt/usr/bin/free
 }
 
 mkPartitions(){
