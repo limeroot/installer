@@ -17,7 +17,9 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 
-SQLITE="/usr/bin/sqlite3"
+#SQLITE="/usr/bin/sqlite3"
+LIMEBOX="/usr/sbin/limebox"
+LAN="lan1"
 CONFIG_DIR="/var/db/limeroot/"
 CONFIG_FILE="/var/db/limeroot/limeconfig.db"
 bold=$(tput bold)
@@ -26,7 +28,7 @@ normal=$(tput sgr0)
 createConfigDB(){
 
     mkdir  -p $CONFIG_DIR
-    $SQLITE $CONFIG_FILE "CREATE TABLE ip (name TEXT, address TEXT);" >/dev/null 2>&1
+    #$SQLITE $CONFIG_FILE "CREATE TABLE ip (name TEXT, address TEXT);" >/dev/null 2>&1
 }
 
 getDrive(){
@@ -67,7 +69,25 @@ getDrive(){
     hdd="/dev/${hdd}"
 }
 
+getLAN(){
+    while [ "${found}" != "yes" ]; do
+
+        echo -e "Please type the first LAN name you want to set to LimeRoot:"
+        read LAN
+        found="yes"
+        #prefix=$(busybox ipcalc -p ${ip_address} -s)
+        #prefix=${prefix##*=}
+        #if [ "${prefix}" == "24" ]; then
+        #    found="yes"
+        #else
+        #    found="no"
+        #    echo "Error: ${bold}\"${ip_address}\"${normal} is not a valid IP Address"
+        #fi
+    done
+}
+
 getIP(){
+    found="no"
     while [ "${found}" != "yes" ]; do
 
         echo -e "Please type the LAN IP Address you want to set to LimeRoot:"
@@ -87,16 +107,16 @@ bbLinks(){
 	#Relative links are usted to prevent some errors if sysadmin need move/copy this links via scp, ssh, sftp:
 	ln -s busybox /mnt/bin/ping
 	ln -s busybox /mnt/bin/nc
-	ln -s busybox /mnt/bin/netstat
-	ln -s ../bin/busybox /mnt/sbin/ifconfig
-	ln -s ../bin/busybox /mnt/sbin/route
+	# ln -s busybox /mnt/bin/netstat
+	# ln -s ../bin/busybox /mnt/sbin/ifconfig
+	# ln -s ../bin/busybox /mnt/sbin/route
 	ln -s ../../bin/busybox /mnt/usr/sbin/brctl
 	ln -s ../../bin/busybox /mnt/usr/bin/arping
 	ln -s ../../bin/busybox /mnt/usr/bin/wget
 	ln -s ../../bin/busybox /mnt/usr/bin/traceroute
 	ln -s ../../bin/busybox /mnt/usr/bin/ipcalc
 	ln -s ../../bin/busybox /mnt/usr/bin/nslookup
-    ln -s ../../bin/busybox /mnt/usr/bin/free
+    # ln -s ../../bin/busybox /mnt/usr/bin/free
 }
 
 mkPartitions(){
@@ -199,13 +219,15 @@ quickInst(){
     
     getDrive
     
+    getLAN
+    
     getIP
     
     createConfigDB
     
-    $SQLITE $CONFIG_FILE "INSERT INTO ip(name,address) VALUES('lan','${ip_address}');"
+    #$SQLITE $CONFIG_FILE "INSERT INTO ip(name,address) VALUES('lan','${ip_address}');"
     
-    #$SQLITE $CONFIG_FILE "select * from ip"    
+    $LIMEBOX lan ${LAN} use eth0 ${ip_address} 
     
     echo "Installing MBR..."
     
