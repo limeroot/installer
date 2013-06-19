@@ -70,6 +70,7 @@ getDrive(){
 }
 
 getLAN(){
+    found="no"
     while [ "${found}" != "yes" ]; do
 
         echo -e "Please type the first LAN name you want to set to LimeRoot:"
@@ -107,16 +108,16 @@ bbLinks(){
 	#Relative links are usted to prevent some errors if sysadmin need move/copy this links via scp, ssh, sftp:
 	ln -s busybox /mnt/bin/ping
 	ln -s busybox /mnt/bin/nc
-	# ln -s busybox /mnt/bin/netstat
-	# ln -s ../bin/busybox /mnt/sbin/ifconfig
-	# ln -s ../bin/busybox /mnt/sbin/route
+	#ln -s busybox /mnt/bin/netstat
+	#ln -s ../bin/busybox /mnt/sbin/ifconfig
+	#ln -s ../bin/busybox /mnt/sbin/route
 	ln -s ../../bin/busybox /mnt/usr/sbin/brctl
 	ln -s ../../bin/busybox /mnt/usr/bin/arping
 	ln -s ../../bin/busybox /mnt/usr/bin/wget
 	ln -s ../../bin/busybox /mnt/usr/bin/traceroute
 	ln -s ../../bin/busybox /mnt/usr/bin/ipcalc
 	ln -s ../../bin/busybox /mnt/usr/bin/nslookup
-    # ln -s ../../bin/busybox /mnt/usr/bin/free
+        #ln -s ../../bin/busybox /mnt/usr/bin/free
 }
 
 mkPartitions(){
@@ -235,8 +236,9 @@ quickInst(){
     cat /usr/lib/extlinux/mbr.bin >$hdd
     
     #Calculate if hdd size is enough for swap:
-    [ $hdd_size -le 2000 ] && swap=0 || swap=1024
-    [ "$1" = "noswap" ] && swap=0
+    #[ $hdd_size -le 2000 ] && swap=0 || swap=1024
+    #[ "$1" = "noswap" ] && swap=0
+    swap=0
 
     #Calculate size for root and swap partitions
     # create partitions
